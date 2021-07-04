@@ -23,6 +23,7 @@ Examples:
 ### To do
   * Siteswap validation
   * Rotate juggler if the prop is rings
+  * Make it work by only including `ss.js` or `ss.min.js` instead of all source files separately
   
 
 # SiteswapJS (Original readme) #
