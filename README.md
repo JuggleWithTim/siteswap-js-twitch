@@ -1,4 +1,31 @@
-# SiteswapJS #
+# SiteswapJS Twitch integration
+
+### Setup
+Change the login credentials for your bot in `botlogin.js`. Generate oauth here: https://twitchapps.com/tmi/
+
+Add `twitch.html` as a browser source in OBS.
+
+If hosting this online, make sure to protect the directory to not reveal your bots login credentials.
+
+### Usage
+`!ss <siteswap> <prop>`
+
+Possible props: b, c, r or any Twitch emote. (No prop = defaults to balls)
+
+Examples:
+  
+`!ss 5` (Juggles a 5 ball cascade with the default prop, balls)
+  
+`!ss 441 PogChamp` (Juggles 441 with PogChamp emotes)
+  
+`!ss 97531 c` (Juggles 97531 with clubs)
+  
+### To do
+  * Siteswap validation
+  * Rotate juggler if the prop is rings
+  
+
+# SiteswapJS (Original readme) #
 
 A Javascript library for siteswap juggling animations.
 
