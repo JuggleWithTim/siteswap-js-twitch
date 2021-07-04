@@ -1,17 +1,17 @@
-<script src="scripts/tmi.min.js"></script>
+<script src="tmi.min.js"></script>
 <script src="botlogin.js"></script>
 
-<!-- <script src="scripts/ss.js"></script>-->
+<!-- <script src="ss.js"></script>-->
 <!-- When using ss.js instead of the sourcefiles below the error "propImage is not defined" happens. Because I can't fix it myself I'm including everything below instead. Not stupid if it works right? -->
-<script src="scripts/src/Animator.js"></script>
-<script src="scripts/src/ClubBalance.js"></script>
-<script src="scripts/src/Draw.js"></script>
-<script src="scripts/src/Hands.js"></script>
-<script src="scripts/src/HeadBounce.js"></script>
-<script src="scripts/src/Juggler.js"></script>
-<script src="scripts/src/Prop.js"></script>
-<script src="scripts/src/Props.js"></script>
-<script src="scripts/src/Throw.js"></script>
+<script src="src/Animator.js"></script>
+<script src="src/ClubBalance.js"></script>
+<script src="src/Draw.js"></script>
+<script src="src/Hands.js"></script>
+<script src="src/HeadBounce.js"></script>
+<script src="src/Juggler.js"></script>
+<script src="src/Prop.js"></script>
+<script src="src/Props.js"></script>
+<script src="src/Throw.js"></script>
 
 
 <script>
@@ -28,7 +28,7 @@
 			let animator;
 
 // Frontend
-document.write("<canvas id='stage' width='280', height='640' style='background: rgba(0,0,0,0.6);'></canvas>");
+document.write("<canvas id='stage' width='280', height='640' style='background: rgba(0,0,0,0);'></canvas>");
 
 // Create a client with our options
 const client = new tmi.client(opts);
