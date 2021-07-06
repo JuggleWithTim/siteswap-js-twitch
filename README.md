@@ -21,7 +21,6 @@ Examples:
 `!ss 97531 c` (Juggles 97531 with clubs)
   
 ### To do
-  * Siteswap validation
   * Rotate juggler if the prop is rings
   * Make it work by only including `ss.js` or `ss.min.js` instead of all source files separately. (`propImage is not defined` when using emote as prop)
   
