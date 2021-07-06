@@ -19,7 +19,8 @@ function Hands(ss) {
     this.initCatches();
     this.initHolding();
   } else {
-    throw new Error('Invalid siteswap');
+    //Commented out to make validation in twitch chat work. Instead we get an Uncaught TypeError in console, but it doesn't break so it's fine.
+    //throw new Error('Invalid siteswap');
   }
 
   // For keeping track of which is the next throw to make

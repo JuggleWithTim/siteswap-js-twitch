@@ -55,6 +55,14 @@ client.on('message', (channel, tags, message, self) => {
 			//const options = {propType: `${parameters[1]}`}
 			const options = parameters[1] ? {propType: parameters[1]} : {}
 
+				//Validate siteswap
+				ss = `${parameters[0]}`;
+				hands = new Hands(ss);
+				if (hands.validateSiteswap() === false) {
+					let nope = `Invalid siteswap NotLikeThis`;
+					client.say(channel, nope);
+				}
+
 				//Emote prop
 				if (tags.emotes !== null) {
 					emoteID = `${Object.keys(tags.emotes)[0]}`;
