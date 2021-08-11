@@ -20,7 +20,7 @@
 				fps: 60,
 				throwsPerSecond: 2,
 				exportGif: false,
-				backgroundColour: '#FFFFFF',
+				//backgroundColour: '#FFFFFF',
 				controls: false,
 				debug: true,
 			};
@@ -38,6 +38,11 @@ client.on('connected', onConnectedHandler);
 
 // Connect to Twitch:
 client.connect();
+
+// Start animator with predefined siteswap
+	canvasId = "stage";
+	animator = new SiteswapJS(canvasId, "3", options);
+	animator.start();
 
 // Called every time the bot connects to Twitch chat
 function onConnectedHandler (addr, port) {
