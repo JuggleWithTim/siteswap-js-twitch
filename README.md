@@ -23,6 +23,8 @@ Examples:
 ### To do
   * Rotate juggler if the prop is rings
   * Make it work by only including `ss.js` or `ss.min.js` instead of all source files separately. (`propImage is not defined` when using emote as prop)
+  * Support BTTV emotes FrankerFaceZ emotes
+  * Support FrankerFaceZ emotes
   
 
 # SiteswapJS (Original readme) #
