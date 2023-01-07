@@ -11,16 +11,13 @@ function Hands(ss) {
   this.number = 0;
   this.valid = this.validateSiteswap();
   this.catches = {};
-  this.holding = { left: 0, right: 0 };
 
   if (this.valid) {
     this.sync = this.type === 'synchronous' || this.type === 'synchronous multiplex';
     this.period = this.left.length;
     this.initCatches();
-    this.initHolding();
   } else {
-    //Commented out to make validation in twitch chat work. Instead we get an Uncaught TypeError in console, but it doesn't break so it's fine.
-    //throw new Error('Invalid siteswap');
+    throw new Error('Invalid siteswap');
   }
 
   // For keeping track of which is the next throw to make
@@ -53,7 +50,7 @@ function Hands(ss) {
   this.spinning = false;
 }
 
-Hands.prototype.getNextThrows = function(spinning) {
+Hands.prototype.getNextThrows = function() {
   const throws = {
     left: [],
     right: []
@@ -69,29 +66,13 @@ Hands.prototype.getNextThrows = function(spinning) {
   if (r.active && r.value !== 0)
     throws.right = this.right[this.rightIndex];
 
-  this.holding.left -= this.countThrownProps(throws.left, true);
-  this.holding.right -= this.countThrownProps(throws.right, true);
-
-  // Advance indices.
+  // Advance indices
   if (++this.leftIndex === this.left.length)
     this.leftIndex = 0;
   if (++this.rightIndex === this.right.length)
     this.rightIndex = 0;
 
   return throws;
-};
-
-Hands.prototype.makeCatches = function(catches) {
-  this.holding.left += catches.left;
-  this.holding.right += catches.right;
-};
-
-Hands.prototype.getHolding = function(spinning) {
-  return {
-    left: this.holding.left,
-    right: this.holding.right,
-    spinning: spinning,
-  };
 };
 
 Hands.prototype.update = function(count, timeUnit, height, scale, spinLength) {
@@ -244,7 +225,7 @@ Hands.prototype.validateSiteswap = function() {
     this.type = 'multiplex';
   else if (this.siteswap.match(/^(\([02468acegikmoqsuwy]x?,[02468acegikmoqsuwy]x?\))+\*?$/))
     this.type = 'synchronous';
-  else if (this.siteswap.match(/^(\(([02468acegikmoqsuwyx]x?|\[[02468acegikmoqsuwyx]{2,}\]),([02468acegikmoqsuwy]x?|\[[02468acegikmoqsuwyx]{2,}\])\))+\*?$/))
+  else if (this.siteswap.match(/^(\(([02468acegikmoqsuwyx]x?|\[[02468acegikminioqsuwyx]{2,}\]),([02468acegikmoqsuwy]x?|\[[02468acegikmoqsuwyx]{2,}\])\))+\*?$/))
     this.type = 'synchronous multiplex';
   else
     return false;
@@ -504,41 +485,5 @@ Hands.prototype.initCatches = function() {
       if (t.value > 0 && t.value % 2 === 0) this.catches.right[index].push(t.value);
       else this.catches.left[index].push(Math.abs(t.value));
     });
-  }
-};
-
-Hands.prototype.countThrownProps = (throws, onlyActiveThrows = false) => throws.filter(t => !onlyActiveThrows || t.active).map(t => 0 + !!t.value).reduce((acc, val) => acc + val, 0);
-
-Hands.prototype.initHolding = function() {
-  const numCatches = { left: {}, right: {} };
-
-  // Run through the throws - rethrows until holding.left + holding.right = number
-  let count = 0;
-  while (this.holding.left + this.holding.right < this.number) {
-    const i = count;
-    const index = i % this.period;
-
-    this.holding.left += this.countThrownProps(this.left[index]) - (numCatches.left[i] || 0);
-    this.holding.right += this.countThrownProps(this.right[index]) - (numCatches.right[i] || 0);
-
-    this.left[index].forEach(t => {
-      const v = t.value;
-      const j = i + Math.abs(v);
-
-      if (v === 0) return;
-      if (v > 0 && v % 2 === 0) numCatches.left[j] = (numCatches.left[j] || 0) + 1;
-      else numCatches.right[j] = (numCatches.right[j] || 0) + 1;
-    });
-
-    this.right[index].forEach(t => {
-      const v = t.value;
-      const j = i + Math.abs(v);
-
-      if (v === 0) return;
-      if (v > 0 && v % 2 === 0) numCatches.right[j] = (numCatches.right[j] || 0) + 1;
-      else numCatches.left[j] = (numCatches.left[j] || 0) + 1;
-    });
-
-    count++;
   }
 };

@@ -22,13 +22,15 @@
 				exportGif: false,
 				//backgroundColour: '#FFFFFF',
 				controls: false,
-				debug: true,
+				debug: false,
+				propType: 'i',
 			};
 			
 			let animator;
 
 // Frontend
-document.write("<canvas id='stage' width='280', height='640' style='background: rgba(0,0,0,0);'></canvas>");
+//document.write("<canvas id='stage' width='280' height='640' style='background: rgba(0,0,0,0.6);'></canvas>");
+document.write("<canvas id='stage' width='280' height='640'></canvas>");
 
 // Create a client with our options
 const client = new tmi.client(opts);
@@ -51,6 +53,15 @@ function onConnectedHandler (addr, port) {
 
 //Siteswap command
 client.on('message', (channel, tags, message, self) => {
+
+	//Change prop if message contains emote
+	if (tags.emotes !== null) {
+		emoteID = `${Object.keys(tags.emotes)[0]}`;
+		//propImage.src = 'https://static-cdn.jtvnw.net/emoticons/v1/' + emoteID + '/2.0';
+		propImage.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' + emoteID + '/default/dark/2.0';
+	}
+				
+				
     if(self || message[0] !== '!') return;
     let parameters = message.split(' ').filter(n => n);
     let command = parameters.shift().slice(1).toLowerCase();
@@ -58,7 +69,7 @@ client.on('message', (channel, tags, message, self) => {
 			canvasId = "stage";
 			siteswap = `${parameters[0]}`;
 			//const options = {propType: `${parameters[1]}`}
-			const options = parameters[1] ? {propType: parameters[1]} : {}
+			const options = parameters[1] ? {propType: parameters[1]} : {propType: 'i'}
 
 				//Validate siteswap
 				ss = `${parameters[0]}`;
@@ -69,13 +80,14 @@ client.on('message', (channel, tags, message, self) => {
 				}
 
 				//Emote prop
-				if (tags.emotes !== null) {
-					emoteID = `${Object.keys(tags.emotes)[0]}`;
-					propImage.src = 'https://static-cdn.jtvnw.net/emoticons/v1/' + emoteID + '/2.0';
-				}
+				//if (tags.emotes !== null) {
+				//	emoteID = `${Object.keys(tags.emotes)[0]}`;
+				//	propImage.src = 'https://static-cdn.jtvnw.net/emoticons/v1/' + emoteID + '/2.0';
+				//}
 				
 			animator = new SiteswapJS(canvasId, siteswap, options);
 			animator.start();
     }
+
 });
 </script>

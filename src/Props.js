@@ -1,27 +1,77 @@
 /* jshint -W097 */
 'use strict';
 
-function Props(type, timeUnit, a, scale, height) {
+function Props(type, timeUnit, a, scale, height, hands, styles) {
   this.type = type;
   this.timeUnit = timeUnit;
   this.a = a;
   this.scale = scale;
   this.height = height;
-  this.props = [];
+  
+  this.props = {
+    left: [], // Stack of props in left hand
+    right: [], // Stack of props in right hand
+    air: [],
+  };
+
+  this.init(hands, styles);
 }
 
-Props.prototype.update = function() {
-  const catches = { left: 0, right: 0 };
+Props.prototype.init = function(hands, styles) {
+  const numCatches = { left: {}, right: {} };
 
-  for (let i in this.props) {
-    const c = this.props[i].update(this.a);
+  let i = 0;
+  let colorIndex = 0;
+  
+  // Run through the throws - rethrow until the number of balls in hands = number of props in pattern
+  while (this.props.left.length + this.props.right.length < hands.number) {
+    const index = i % hands.period;
+
+    // Figure out how many props are thrown for the first time on this beat
+    const newlyThrownLeft = this.countThrownProps(hands.left[index]) - (numCatches.left[i] || 0);
+    const newlyThrownRight = this.countThrownProps(hands.right[index]) - (numCatches.right[i] || 0);
+
+    // "Throw" the props
+    hands.left[index].forEach(t => {
+      const v = t.value;
+      const j = i + Math.abs(v);
+
+      if (v === 0) return;
+      if (v > 0 && v % 2 === 0) numCatches.left[j] = (numCatches.left[j] || 0) + 1;
+      else numCatches.right[j] = (numCatches.right[j] || 0) + 1;
+    });
+
+    hands.right[index].forEach(t => {
+      const v = t.value;
+      const j = i + Math.abs(v);
+
+      if (v === 0) return;
+      if (v > 0 && v % 2 === 0) numCatches.right[j] = (numCatches.right[j] || 0) + 1;
+      else numCatches.left[j] = (numCatches.left[j] || 0) + 1;
+    });
+
+    // Create the newly thrown props
+    for (let j = 0; j < newlyThrownLeft; j++) {
+      this.props.left.unshift(new Prop(this.type, styles[colorIndex++ % styles.length]));
+    }
+
+    for (let j = 0; j < newlyThrownRight; j++) {
+      this.props.right.unshift(new Prop(this.type, styles[colorIndex++ % styles.length]));
+    }
+
+    i++;
+  }
+};
+
+Props.prototype.update = function() {
+  for (let i in this.props.air) {
+    const c = this.props.air[i].update(this.a);
+    
     if (c !== 'none') {
-      this.props.splice(i, 1);
-      catches[c]++;
+      // Move prop from the "air" into the appropriate hand
+      this.props[c] = this.props[c].concat(this.props.air.splice(i, 1));
     }
   }
-
-  return catches;
 };
 
 Props.prototype.draw = function(ctx, x, y, r) {
@@ -37,8 +87,8 @@ Props.prototype.draw = function(ctx, x, y, r) {
     return 0;
   }
 
-  this.props.sort(compareZ);
-  this.props.forEach(prop => prop.draw(ctx, x, y, r, this.scale, this.height));
+  this.props.air.sort(compareZ);
+  this.props.air.forEach(prop => prop.draw(ctx, x, y, r, this.scale, this.height));
 };
 
 Props.prototype.makeThrows = function(side, throws, hands) {
@@ -75,8 +125,12 @@ Props.prototype.makeThrows = function(side, throws, hands) {
       destX *= -1;
     }
 
-    this.props.push(new Prop(this.type, ssValue + start, startX, destX, this.timeUnit, this.a));
+    const prop = this.props[side].pop();
+    prop.throw(ssValue + start, startX, destX, this.timeUnit, this.a);
+    this.props.air.push(prop);
 
     start += multiplexSplit / throws.length;
   }
 };
+
+Props.prototype.countThrownProps = (throws, onlyActiveThrows = false) => throws.filter(t => !onlyActiveThrows || t.active).map(t => 0 + !!t.value).reduce((acc, val) => acc + val, 0);

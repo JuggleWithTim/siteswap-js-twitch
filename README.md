@@ -1,31 +1,4 @@
-# SiteswapJS Twitch integration
-
-### Setup
-Change the login credentials for your bot in `botlogin.js`. Generate oauth here: https://twitchapps.com/tmi/
-
-Add `twitch.html` as a browser source in OBS.
-
-If hosting this online, make sure to protect the directory to not reveal your bots login credentials.
-
-### Usage
-`!ss <siteswap> <prop>`
-
-Possible props: b, c, r or any Twitch emote. (No prop = defaults to balls)
-
-Examples:
-  
-`!ss 5` (Juggles a 5 ball cascade with the default prop, balls)
-  
-`!ss 441 PogChamp` (Juggles 441 with PogChamp emotes)
-  
-`!ss 97531 c` (Juggles 97531 with clubs)
-  
-### To do
-  * Rotate juggler if the prop is rings
-  * Make it work by only including `ss.js` or `ss.min.js` instead of all source files separately. (`propImage is not defined` when using emote as prop)
-  
-
-# SiteswapJS (Original readme) #
+# SiteswapJS #
 
 A Javascript library for siteswap juggling animations.
 
@@ -52,11 +25,44 @@ Where `canvasId` in the id of a HTML canvas, `siteswap` is a string of the sites
 
 Option | Type | Default | Description
 --- | --- | --- | ---
-propType | `b`, `c` or `r` | b | Which prop to use: b = balls, c = clubs, r = rings
-throwsPerSecond | Float | 3 | How many beats per second
-headBounce | Boolean | `false` | Whether the juggler should be performing a headbounce
-clubBalance | Boolean | `false` | Whether the juggler should be performing a club balance
-spinOn0s | Boolean | `false` | When `true`, the juggler pirouettes 360 degrees for each two consecutive 0 beats
-spinOn2s | Boolean | `false` | When `true`, the juggler pirouettes 360 degrees for each two consecutive 2 beats
-debug | Boolean | `false` | When `true`, shows additional debugging information on the canvas
-controls | Boolean | `false` | Whether to add mouse and touch listeners to the canvas for rotating the juggler
+`propType` | `b`, `c` or `r` | b | Which prop to use: b = balls, c = clubs, r = rings
+`throwsPerSecond` | Float | 3 | How many beats per second
+`headBounce` | Boolean | `false` | Whether the juggler should be performing a headbounce
+`clubBalance` | Boolean | `false` | Whether the juggler should be performing a club balance
+`spinOn0s` | Boolean | `false` | When `true`, the juggler pirouettes 360 degrees for each two consecutive 0 beats
+`spinOn2s` | Boolean | `false` | When `true`, the juggler pirouettes 360 degrees for each two consecutive 2 beats
+`debug` | Boolean | `false` | When `true`, shows additional debugging information on the canvas
+`controls` | Boolean | `false` | Whether to add mouse and touch listeners to the canvas for rotating the juggler
+`styles` | Object | See "Default Styles" below | Customises the styles of the props and juggler. Can be partially or fully overwritten. `props` is an array of style objects, with each initially thrown prop taking the next style defined in the array or wrapping back around to the start if there isn't one
+
+### Default Styles
+
+```
+styles: {
+  background: {
+    fill: '#FFF',
+    stroke: '#FFF',
+  },
+  props: [
+    {
+      fill: '#8BC34A',
+      stroke: '#333',
+    },
+  ],
+  headBounce: {
+    fill: '#DDD',
+    stroke: '#333',
+  },
+  clubBalance: {
+    stroke: '#333',
+  },
+  head: {
+    fill: '#FFDAC8',
+    stroke: '#333',
+  },
+  body: {
+    fill: '#BDBDBD',
+    stroke: '#333',
+  },
+}
+```
