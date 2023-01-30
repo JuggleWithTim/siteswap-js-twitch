@@ -12,7 +12,7 @@ Examples:
 
 `!ss 5` (Juggles a 5 ball cascade)
   
-`!ss 441 (Juggles a cool 3 ball pattern called 441)
+`!ss 441` (Juggles a cool 3 ball pattern called 441)
   
 `!ss 97531` (This is a beast of a trick, one of my favorites!)
   
