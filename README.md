@@ -5,9 +5,11 @@ Add `twitch.html` as a browser source in OBS.
 If hosting this online, make sure to protect the directory to not reveal your bots login credentials.
 ### Usage
 `!ss <siteswap>`
+
 It will automatically update the prop to the emotes seen in chat.
 
 Examples: 
+
 `!ss 5` (Juggles a 5 ball cascade)
   
 `!ss 441 (Juggles a cool 3 ball pattern called 441)
