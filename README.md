@@ -18,5 +18,6 @@ Examples:
   
 ### To do
   * Support BTTV and FrankerFaceZ emotes
+  * Add support for Youtube live chat
 
 ### Check out the original Siteswap-js project by Tom Whitfield: https://github.com/tomwhitfield/siteswap-js
