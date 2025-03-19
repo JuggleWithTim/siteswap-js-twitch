@@ -1,6 +1,7 @@
 # SiteswapJS Twitch integration
 ### Setup
-Change the login credentials for your bot in `botlogin.js`. Generate oauth here: https://twitchapps.com/tmi/
+Change the login credentials for your bot in `botlogin.js`. Generate oauth here: https://twitchtokengenerator.com/
+
 Add `twitch.html` as a browser source in OBS.
 If hosting this online, make sure to protect the directory to not reveal your bots login credentials.
 ### Usage
