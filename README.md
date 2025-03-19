@@ -5,9 +5,9 @@ Change the login credentials for your bot in `botlogin.js`. Generate oauth here:
 Add `twitch.html` as a browser source in OBS.
 If hosting this online, make sure to protect the directory to not reveal your bots login credentials.
 ### Usage
-`!ss <siteswap>`
-
 It will automatically update the prop to the emotes seen in chat.
+
+`!ss <siteswap>` (juggles the specified siteswap)
 
 Examples: 
 
