@@ -17,7 +17,7 @@
 
 			let options = {
 				fps: 60,
-				throwsPerSecond: 2,
+				throwsPerSecond: 3,
 				exportGif: false,
 				//backgroundColour: '#FFFFFF',
 				controls: false,
@@ -40,7 +40,7 @@ document.write(`
       border: 2px solid #222;
       border-radius: 16px;
       box-shadow: 3px 3px 8px rgba(0,0,0,0.13);
-      font-size: 1.11em;
+      font-size: 23px;
       z-index: -103;
     }
     #speech-bubble::after {
@@ -108,8 +108,11 @@ async function getAIResponse(prompt) {
   };
   const body = JSON.stringify({
     model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
-    max_completion_tokens: 80,
+    messages: [
+      { role: "system", content: "You are a juggling robot named Anthony, an excited, fun, and friendly Twitch juggling robot with the ability to visualize juggling patterns for the viewers. Respond to valid siteswaps with hype, positive encouragement, and short explanations if possible. Keep your responses short with only a sentence or two. Do not use any formatting."},
+      { role: "user", content: prompt }
+    ],
+    max_completion_tokens: 120,
     temperature: 1.5,
   });
   try {
@@ -174,9 +177,9 @@ client.on('message', async (channel, tags, message, self) => {
 	    isValid = hands.valid;
 	  } catch (e) { /* not valid */ }
 	  if (isValid) {
-	    const prompt = `The user @${tags.username} has sent a message containing numbers that form a valid siteswap pattern: ${siteswapCandidate}. Respond with excitement and enthusiasm, informing that it is a valid siteswap and can be juggled.`;
+	    const prompt = `The user @${tags.username} has sent a message containing a valid siteswap pattern: ${siteswapCandidate}. Respond with a short message informing the user that it is a valid siteswap and you are going to juggle it right now.`;
 	    const aiResponse = await getAIResponse(prompt);
-	    showSpeechBubble(aiResponse, 30000);
+	    showSpeechBubble(aiResponse, 25000);
 
 	    // Update juggled siteswap animation
         if (animator) {
@@ -220,3 +223,4 @@ client.on('message', async (channel, tags, message, self) => {
 window.addEventListener('resize', positionSpeechBubble);
 
 </script>
+
