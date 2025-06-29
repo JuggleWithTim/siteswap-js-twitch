@@ -26,6 +26,9 @@
 			
 			let animator;
 
+      // --- NEW: Store recent chat messages ---
+      const chatHistory = [];
+
 // Frontend
 document.write("<canvas id='stage' width='280' height='640' style='background: rgba(0,0,0,0);'></canvas>");
 
@@ -109,7 +112,7 @@ async function getAIResponse(prompt) {
   const body = JSON.stringify({
     model: "gpt-4o-mini",
     messages: [
-      { role: "system", content: "You are a juggling robot named Anthony, an excited, fun, and friendly Twitch juggling robot with the ability to visualize juggling patterns for the viewers. Respond to valid siteswaps with hype, positive encouragement, and short explanations if possible. Keep your responses short with only a sentence or two. Do not use any formatting."},
+      { role: "system", content: "You are a juggling robot named Anthony, an excited, fun, and friendly Twitch juggling robot with the ability to visualize juggling patterns for the viewers. Respond to valid siteswaps with hype, positive encouragement, and short explanations if possible. Keep your responses short with only a sentence or two. Do not use any text formatting but feel free to use emojis."},
       { role: "user", content: prompt }
     ],
     max_completion_tokens: 120,
@@ -162,6 +165,11 @@ client.on('message', async (channel, tags, message, self) => {
 	  if (self) return;  // Ignore own messages to avoid loops
 	  if (tags['username'] && tags['username'].toLowerCase() === opts.identity.username.toLowerCase()) return;
 
+    // --- CHAT HISTORY: store this message ---
+    const username = tags['username'] || "unknown";
+    chatHistory.push({ username, message });
+    if (chatHistory.length > 20) chatHistory.shift();
+
 	  // Emote handling
 	if (tags.emotes !== null) {
 	    const emoteID = Object.keys(tags.emotes)[0];
@@ -177,9 +185,19 @@ client.on('message', async (channel, tags, message, self) => {
 	    isValid = hands.valid;
 	  } catch (e) { /* not valid */ }
 	  if (isValid) {
-	    const prompt = `The user @${tags.username} has sent a message containing a valid siteswap pattern: ${siteswapCandidate}. Respond with a short message informing the user that it is a valid siteswap and you are going to juggle it right now.`;
-	    const aiResponse = await getAIResponse(prompt);
-	    showSpeechBubble(aiResponse, 25000);
+	    // --- PREPARE chat history for context in AI prompt ---
+        const recentChat = chatHistory
+          .slice(-20)
+          .filter(msg => !!msg.username && !!msg.message)
+          .map(({ username, message }) => ({
+            role: "user",
+            content: `[${username}]: ${message}`
+          }));
+        const prompt = `The user @${tags.username} has sent a message containing a valid siteswap pattern: ${siteswapCandidate}. Respond with a short message, informing the user that it is a valid siteswap and you are going to juggle it right now. Do not use any text formatting but feel free to use emojis.`;
+
+        // --- Pass chat context to getAIResponse ---
+        const aiResponse = await getAIResponseWithChatContext(prompt, recentChat);
+        showSpeechBubble(aiResponse, 30000);
 
 	    // Update juggled siteswap animation
         if (animator) {
@@ -220,7 +238,41 @@ client.on('message', async (channel, tags, message, self) => {
     }
 });
 
+// -- New helper function --
+async function getAIResponseWithChatContext(prompt, chatMessages) {
+  const apiUrl = "https://api.openai.com/v1/chat/completions";
+  const headers = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${window.OPENAI_API_KEY}`,
+  };
+  const body = JSON.stringify({
+    model: "gpt-4o-mini",
+    messages: [
+      { role: "system", content: "You are JuggleBot, an excitable, fun, and friendly Twitch juggling robot. Respond to valid siteswaps with hype, positive encouragement, and short explanations if possible. Speak as if you are part of the stream and love engaging with chat." },
+      ...(chatMessages || []),
+      { role: "user", content: prompt }
+    ],
+    max_completion_tokens: 80,
+    temperature: 1.5,
+  });
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers,
+      body,
+    });
+    if (!response.ok) {
+      throw new Error("OpenAI API error: " + response.statusText);
+    }
+    const data = await response.json();
+    return data.choices && data.choices[0] && data.choices[0].message
+      ? data.choices[0].message.content.trim()
+      : "Wow, that's a valid siteswap!";
+  } catch (e) {
+    return "Exciting valid siteswap detected! (AI error)";
+  }
+}
+
 window.addEventListener('resize', positionSpeechBubble);
 
 </script>
-
