@@ -7,3 +7,4 @@ const opts = {
 	"channelname"
   ]
 };
+window.OPENAI_API_KEY = "";
