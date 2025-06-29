@@ -1,25 +1,25 @@
 {
-  "name": "siteswap-js",
+  "name": "siteswap-js-twitch",
   "version": "1.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "watch-http-server -p 7531 -c-1 .",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "jshint src/*.js",
+    "start": "node server.js",
     "build": "./build.sh",
-    "minify": "minify ss.js > ss.min.js"
+    "minify": "minify public/ss.js > public/ss.min.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tomwhitfield/siteswap-js"
+    "url": "https://github.com/JuggleWithTim/siteswap-js-twitch"
   },
   "keywords": [
     "siteswap",
     "animator",
-    "juggling"
+    "juggling",
+    "twitch",
+    "livestream"
   ],
-  "author": "Tom Whitfield",
+  "author": "JuggleWithTim",
   "license": "ISC",
   "dependencies": {
     "jshint": "2.12.0",
@@ -27,3 +27,4 @@
     "watch-http-server": "0.7.6"
   }
 }
+

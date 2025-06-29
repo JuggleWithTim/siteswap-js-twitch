@@ -1,0 +1,278 @@
+<script src="tmi.min.js"></script>
+<script src="botlogin.js"></script>
+
+<!-- <script src="ss.js"></script>-->
+<!-- When using ss.js instead of the sourcefiles below the error "propImage is not defined" happens. Because I can't fix it myself I'm including everything below instead. Not stupid if it works right? -->
+<script src="src/Animator.js"></script>
+<script src="src/ClubBalance.js"></script>
+<script src="src/Draw.js"></script>
+<script src="src/Hands.js"></script>
+<script src="src/HeadBounce.js"></script>
+<script src="src/Juggler.js"></script>
+<script src="src/Prop.js"></script>
+<script src="src/Props.js"></script>
+<script src="src/Throw.js"></script>
+
+<script>
+
+			let options = {
+				fps: 60,
+				throwsPerSecond: 3,
+				exportGif: false,
+				//backgroundColour: '#FFFFFF',
+				controls: false,
+				debug: false,
+			};
+			
+			let animator;
+
+      // --- NEW: Store recent chat messages ---
+      const chatHistory = [];
+
+// Frontend
+document.write("<canvas id='stage' width='280' height='640' style='background: rgba(0,0,0,0);'></canvas>");
+
+document.write(`
+  <style>
+    #speech-bubble {
+      display: none;
+      position: absolute;
+      max-width: 280px;
+      padding: 14px 20px;
+      background: #fffbe7;
+      border: 2px solid #222;
+      border-radius: 16px;
+      box-shadow: 3px 3px 8px rgba(0,0,0,0.13);
+      font-size: 23px;
+      z-index: -103;
+    }
+    #speech-bubble::after {
+      content: '';
+      position: absolute;
+      left: 2px;  /* <-- move closer to the bubble's left edge */
+      bottom: -19px;
+      margin-bottom: 5px;
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 22px solid #fffbe7;   /* Bubble color */
+      transform: rotate(17deg);
+      transform-origin: top left;
+      z-index: -102;
+    }
+    #speech-bubble::before {
+      /* Optional dark border behind the triangle */
+      content: '';
+      position: absolute;
+      left: 0px;
+      bottom: -21px;
+      margin-bottom: 5px;
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 24px solid #222;      /* Border color */
+      transform: rotate(17deg);
+      transform-origin: top left;
+      z-index: -104;
+    }
+  </style>
+  <div id="speech-bubble"></div>
+`);
+
+function positionSpeechBubble() {
+  const canvas = document.getElementById('stage');
+  const bubble = document.getElementById('speech-bubble');
+  if (!canvas || !bubble) return;
+  const canvasRect = canvas.getBoundingClientRect();
+  // --- stick to right side of canvas, near the bottom ---
+  bubble.style.left = (canvasRect.right + -80) + 'px'; // right of canvas with 20px gap
+  bubble.style.top = (canvasRect.bottom - bubble.offsetHeight - 250) + 'px'; // vertically aligned with canvas bottom, 10px above
+}
+
+function showSpeechBubble(text, durationMs = 4000) {
+  const bubble = document.getElementById('speech-bubble');
+  bubble.textContent = text;
+  bubble.style.display = 'block';
+  positionSpeechBubble();
+  clearTimeout(showSpeechBubble.hideTimeout);
+  showSpeechBubble.hideTimeout = setTimeout(() => {
+    bubble.style.display = 'none';
+  }, durationMs);
+}
+
+// --- OPENAI API SECTION ---
+async function getAIResponse(prompt) {
+  const apiUrl = "https://api.openai.com/v1/chat/completions";
+  const headers = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${window.OPENAI_API_KEY}`,
+  };
+  const body = JSON.stringify({
+    model: "gpt-4o-mini",
+    messages: [
+      { role: "system", content: "You are a juggling robot named Anthony, an excited, fun, and friendly Twitch juggling robot with the ability to visualize juggling patterns for the viewers. Respond to valid siteswaps with hype, positive encouragement, and short explanations if possible. Keep your responses short with only a sentence or two. Do not use any text formatting but feel free to use emojis."},
+      { role: "user", content: prompt }
+    ],
+    max_completion_tokens: 120,
+    temperature: 1.5,
+  });
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers,
+      body,
+    });
+    if (!response.ok) {
+      throw new Error("OpenAI API error: " + response.statusText);
+    }
+    const data = await response.json();
+    return data.choices && data.choices[0] && data.choices[0].message
+      ? data.choices[0].message.content.trim()
+      : "Wow, that's a valid siteswap!";
+        } catch (e) {
+    return "Exciting valid siteswap detected! (AI error)";
+        }
+        }
+
+function findSiteswapCandidates(message) {
+  return Array.from(message.matchAll(/\b(?=[a-zA-Z0-9]*\d)[a-zA-Z0-9\[\]\(\),\*xX]+\b/g))
+    .map(m => m[0])
+    .filter(s => !/^[a-zA-Z]+$/.test(s));
+    }
+
+// Create a client with our options
+const client = new tmi.client(opts);
+
+// Register our event handlers (defined below)
+client.on('connected', onConnectedHandler);
+
+// Connect to Twitch:
+client.connect();
+
+// Start animator with predefined siteswap
+	animator = new SiteswapJS("stage", "3", options);
+	animator.start();
+
+// Called every time the bot connects to Twitch chat
+function onConnectedHandler (addr, port) {
+  console.log(`* Connected to ${addr}:${port}`);
+}
+
+//Siteswap command and emote handling
+client.on('message', async (channel, tags, message, self) => {
+	  if (self) return;  // Ignore own messages to avoid loops
+	  if (tags['username'] && tags['username'].toLowerCase() === opts.identity.username.toLowerCase()) return;
+
+    // --- CHAT HISTORY: store this message ---
+    const username = tags['username'] || "unknown";
+    chatHistory.push({ username, message });
+    if (chatHistory.length > 20) chatHistory.shift();
+
+	  // Emote handling
+	if (tags.emotes !== null) {
+	    const emoteID = Object.keys(tags.emotes)[0];
+		propImage.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' + emoteID + '/default/dark/2.0';
+	}
+
+	// SITESWAP SCAN (first valid only)
+	const candidates = findSiteswapCandidates(message);
+	for (const siteswapCandidate of candidates) {
+	  let isValid = false;
+	  try {
+	    const hands = new Hands(siteswapCandidate);
+	    isValid = hands.valid;
+	  } catch (e) { /* not valid */ }
+	  if (isValid) {
+	    // --- PREPARE chat history for context in AI prompt ---
+        const recentChat = chatHistory
+          .slice(-20)
+          .filter(msg => !!msg.username && !!msg.message)
+          .map(({ username, message }) => ({
+            role: "user",
+            content: `[${username}]: ${message}`
+          }));
+        const prompt = `The user @${tags.username} has sent a message containing a valid siteswap pattern: ${siteswapCandidate}. Respond with a short message, informing the user that it is a valid siteswap and you are going to juggle it right now. Do not use any text formatting but feel free to use emojis.`;
+
+        // --- Pass chat context to getAIResponse ---
+        const aiResponse = await getAIResponseWithChatContext(prompt, recentChat);
+        showSpeechBubble(aiResponse, 30000);
+
+	    // Update juggled siteswap animation
+        if (animator) {
+            animator.stop();
+        }
+	    // Optionally set a default propType or detect based on context
+	    animator = new SiteswapJS('stage', siteswapCandidate, { propType: 'i' });
+			animator.start();
+
+	    break; // Only the first valid siteswap triggers this
+    }
+	}
+
+	  if (message[0] !== '!') return;  // Only proceed for commands
+	  const parameters = message.slice(1).split(' ').filter(n => n);
+	  const command = parameters.shift().toLowerCase();
+
+	  if (command === 'ss') {
+        const siteswap = parameters[0];
+	    const propType = parameters[1] || 'i';
+	    const options = { propType };
+        try {
+            const hands = new Hands(siteswap);
+            if (!hands.valid) {
+                client.say(channel, `Invalid siteswap NotLikeThis`);
+                return;
+            }
+        } catch (e) {
+            client.say(channel, `Invalid siteswap NotLikeThis`);
+            return;
+        }
+
+        if (animator) {
+            animator.stop();
+        }
+	    animator = new SiteswapJS('stage', siteswap, options);
+			animator.start();
+    }
+});
+
+// -- New helper function --
+async function getAIResponseWithChatContext(prompt, chatMessages) {
+  const apiUrl = "https://api.openai.com/v1/chat/completions";
+  const headers = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${window.OPENAI_API_KEY}`,
+  };
+  const body = JSON.stringify({
+    model: "gpt-4o-mini",
+    messages: [
+      { role: "system", content: "You are JuggleBot, an excitable, fun, and friendly Twitch juggling robot. Respond to valid siteswaps with hype, positive encouragement, and short explanations if possible. Speak as if you are part of the stream and love engaging with chat." },
+      ...(chatMessages || []),
+      { role: "user", content: prompt }
+    ],
+    max_completion_tokens: 80,
+    temperature: 1.5,
+  });
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers,
+      body,
+    });
+    if (!response.ok) {
+      throw new Error("OpenAI API error: " + response.statusText);
+    }
+    const data = await response.json();
+    return data.choices && data.choices[0] && data.choices[0].message
+      ? data.choices[0].message.content.trim()
+      : "Wow, that's a valid siteswap!";
+  } catch (e) {
+    return "Exciting valid siteswap detected! (AI error)";
+  }
+}
+
+window.addEventListener('resize', positionSpeechBubble);
+
+</script>
