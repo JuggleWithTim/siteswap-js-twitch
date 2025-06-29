@@ -29,21 +29,53 @@
 // Frontend
 document.write("<canvas id='stage' width='280' height='640' style='background: rgba(0,0,0,0);'></canvas>");
 
-// Add speech bubble element after canvas (as before)
 document.write(`
-  <div id="speech-bubble" style="
-    display:none;
-    position:absolute;
-    /* Remove left:320px; top:60px; */
-    max-width:280px;
-    padding:14px 20px;
-    background:#fffbe7;
-    border:2px solid #222;
-    border-radius:16px;
-    box-shadow:3px 3px 8px rgba(0,0,0,0.13);
-    font-size:1.11em;
-    z-index:1000;
-  "></div>
+  <style>
+    #speech-bubble {
+      display: none;
+      position: absolute;
+      max-width: 280px;
+      padding: 14px 20px;
+      background: #fffbe7;
+      border: 2px solid #222;
+      border-radius: 16px;
+      box-shadow: 3px 3px 8px rgba(0,0,0,0.13);
+      font-size: 1.11em;
+      z-index: -103;
+    }
+    #speech-bubble::after {
+      content: '';
+      position: absolute;
+      left: 2px;  /* <-- move closer to the bubble's left edge */
+      bottom: -19px;
+      margin-bottom: 5px;
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 22px solid #fffbe7;   /* Bubble color */
+      transform: rotate(17deg);
+      transform-origin: top left;
+      z-index: -102;
+    }
+    #speech-bubble::before {
+      /* Optional dark border behind the triangle */
+      content: '';
+      position: absolute;
+      left: 0px;
+      bottom: -21px;
+      margin-bottom: 5px;
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 24px solid #222;      /* Border color */
+      transform: rotate(17deg);
+      transform-origin: top left;
+      z-index: -104;
+    }
+  </style>
+  <div id="speech-bubble"></div>
 `);
 
 function positionSpeechBubble() {
@@ -52,8 +84,8 @@ function positionSpeechBubble() {
   if (!canvas || !bubble) return;
   const canvasRect = canvas.getBoundingClientRect();
   // --- stick to right side of canvas, near the bottom ---
-  bubble.style.left = (canvasRect.right + -60) + 'px'; // right of canvas with 20px gap
-  bubble.style.top = (canvasRect.bottom - bubble.offsetHeight - 200) + 'px'; // vertically aligned with canvas bottom, 10px above
+  bubble.style.left = (canvasRect.right + -80) + 'px'; // right of canvas with 20px gap
+  bubble.style.top = (canvasRect.bottom - bubble.offsetHeight - 250) + 'px'; // vertically aligned with canvas bottom, 10px above
 }
 
 function showSpeechBubble(text, durationMs = 4000) {
@@ -144,7 +176,7 @@ client.on('message', async (channel, tags, message, self) => {
 	  if (isValid) {
 	    const prompt = `The user @${tags.username} has sent a message containing numbers that form a valid siteswap pattern: ${siteswapCandidate}. Respond with excitement and enthusiasm, informing that it is a valid siteswap and can be juggled.`;
 	    const aiResponse = await getAIResponse(prompt);
-	    showSpeechBubble(aiResponse, 15000);
+	    showSpeechBubble(aiResponse, 30000);
 
 	    // Update juggled siteswap animation
         if (animator) {
