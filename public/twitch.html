@@ -176,16 +176,16 @@ client.on('message', async (channel, tags, message, self) => {
 		propImage.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' + emoteID + '/default/dark/2.0';
 	}
 
-	// SITESWAP SCAN (first valid inside ANY message)
-	const candidates = findSiteswapCandidates(message);
-	for (const siteswapCandidate of candidates) {
-	  let isValid = false;
-	  try {
-	    const hands = new Hands(siteswapCandidate);
-	    isValid = hands.valid;
-	  } catch (e) { /* not valid */ }
-	  if (isValid) {
-	    // --- PREPARE chat history for context in AI prompt ---
+    const singleWord = message.trim();
+    if (message.includes(' ') || singleWord.length === 0) {
+      const candidates = findSiteswapCandidates(message);
+      for (const siteswapCandidate of candidates) {
+        let isValid = false;
+        try {
+          const hands = new Hands(siteswapCandidate);
+          isValid = hands.valid;
+        } catch (e) { }
+        if (isValid) {
         const recentChat = chatHistory
           .slice(-20)
           .filter(msg => !!msg.username && !!msg.message)
@@ -193,34 +193,28 @@ client.on('message', async (channel, tags, message, self) => {
             role: "user",
             content: `[${username}]: ${message}`
           }));
-        const prompt = `The user @${tags.username} has sent a message containing a valid siteswap pattern: ${siteswapCandidate}. Respond with a short message, informing the user that it is a valid siteswap and you are going to juggle it right now. Do not use any text formatting but feel free to use emojis.`;
-
-        // --- Pass chat context to getAIResponse ---
+          const prompt = `The user @${tags.username} has sent a message containing a valid siteswap pattern: ${siteswapCandidate}. Respond with a short message, informing the user that it is a valid siteswap and you are going to juggle it right now. Do not use any text formatting but feel free to use emojis.`;
         const aiResponse = await getAIResponseWithChatContext(prompt, recentChat);
         showSpeechBubble(aiResponse, 30000);
 
-	    // Update juggled siteswap animation
         if (animator) {
             animator.stop();
         }
-	    // Optionally set a default propType or detect based on context
-	    animator = new SiteswapJS('stage', siteswapCandidate, { propType: 'i' });
+          animator = new SiteswapJS('stage', siteswapCandidate, { propType: 'i' });
 			animator.start();
 
-	    break; // Only the first valid siteswap triggers this
+          break;
     }
-	}
+    }
+    }
 
-    // --- NEW: FULL MESSAGE SITESWAP VALIDATION ---
-    const singleWord = message.trim();
     if (!message.includes(' ') && singleWord.length > 0) {
       let isValidFull = false;
-        try {
+  try {
         const hands = new Hands(singleWord);
         isValidFull = hands.valid;
-      } catch (e) { /* not valid */ }
+      } catch (e) { }
       if (isValidFull) {
-        // --- PREPARE chat history for context in AI prompt ---
         const recentChat = chatHistory
           .slice(-20)
           .filter(msg => !!msg.username && !!msg.message)
@@ -229,28 +223,24 @@ client.on('message', async (channel, tags, message, self) => {
             content: `[${username}]: ${message}`
           }));
         const prompt = `The user @${tags.username} has sent a message containing a valid siteswap pattern: ${singleWord}. Respond with a short message, informing the user that it is a valid siteswap and you are going to juggle it right now. Do not use any text formatting but feel free to use emojis.`;
-        // --- Pass chat context to getAIResponse ---
         const aiResponse = await getAIResponseWithChatContext(prompt, recentChat);
         showSpeechBubble(aiResponse, 30000);
-
-        // Update juggled siteswap animation
         if (animator) {
             animator.stop();
-        }
+}
         animator = new SiteswapJS('stage', singleWord, { propType: 'i' });
 			animator.start();
-        // Don't break. It's parallel to above and shouldn't interfere
     }
     }
 
-	  if (message[0] !== '!') return;  // Only proceed for commands
-	  const parameters = message.slice(1).split(' ').filter(n => n);
-	  const command = parameters.shift().toLowerCase();
+    if (message[0] !== '!') return;
+    const parameters = message.slice(1).split(' ').filter(n => n);
+    const command = parameters.shift().toLowerCase();
 
-	  if (command === 'ss') {
+    if (command === 'ss') {
         const siteswap = parameters[0];
-	    const propType = parameters[1] || 'i';
-	    const options = { propType };
+        const propType = parameters[1] || 'i';
+        const options = { propType };
   try {
             const hands = new Hands(siteswap);
             if (!hands.valid) {
@@ -265,12 +255,11 @@ client.on('message', async (channel, tags, message, self) => {
         if (animator) {
             animator.stop();
 }
-	    animator = new SiteswapJS('stage', siteswap, options);
-			animator.start();
+        animator = new SiteswapJS('stage', siteswap, options);
+        animator.start();
     }
 });
 
-// -- New helper function --
 async function getAIResponseWithChatContext(prompt, chatMessages) {
   const apiUrl = "https://api.openai.com/v1/chat/completions";
   const headers = {
@@ -308,4 +297,3 @@ async function getAIResponseWithChatContext(prompt, chatMessages) {
 window.addEventListener('resize', positionSpeechBubble);
 
 </script>
-
