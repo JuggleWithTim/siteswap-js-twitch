@@ -128,18 +128,6 @@ client.on('message', async (channel, tags, message, self) => {
       io.emit('siteswap-change', { siteswap: singleWord, propType: 'i' });
     }
   }
-
-  // Handle !ss command
-  if (message.startsWith('!ss')) {
-    const params = message.slice(3).trim().split(' ');
-    const siteswap = params[0];
-    const propType = params[1] || 'i';
-    if (isValidSiteswap(siteswap)) {
-      io.emit('siteswap-change', { siteswap, propType });
-    } else {
-      client.say(channel, `Invalid siteswap NotLikeThis`);
-    }
-  }
 });
 
 // Connect to Twitch
