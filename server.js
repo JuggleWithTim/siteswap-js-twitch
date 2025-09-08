@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const http = require('http');
 const axios = require('axios');
 const validateSiteswap = require('./siteswapValidator');
+const emoteService = require('./emoteService');
 
 const app = express();
 const server = http.createServer(app);
@@ -85,9 +86,24 @@ client.on('message', async (channel, tags, message, self) => {
   io.emit('chat-message', { username, message });
 
   // Handle emotes
+  let emoteUrl = null;
+
+  // First priority: Twitch emotes
   if (tags.emotes) {
     const emoteID = Object.keys(tags.emotes)[0];
-    io.emit('emote', `https://static-cdn.jtvnw.net/emoticons/v2/${emoteID}/default/dark/2.0`);
+    emoteUrl = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteID}/default/dark/2.0`;
+  }
+  // Second priority: 3rd party emotes and emojis
+  else {
+    const detectedEmote = await emoteService.getFirstEmote(message);
+    if (detectedEmote) {
+      emoteUrl = detectedEmote.url;
+    }
+  }
+
+  // Send emote to frontend if found
+  if (emoteUrl) {
+    io.emit('emote', emoteUrl);
   }
 
   const singleWord = message.trim();
@@ -130,8 +146,17 @@ client.on('message', async (channel, tags, message, self) => {
   }
 });
 
-// Connect to Twitch
-client.connect();
+// Initialize emote service
+async function initializeServer() {
+  await emoteService.initialize();
+
+  // Connect to Twitch
+  client.connect();
+
+  server.listen(PORT, () => {
+    console.log(`SiteswapJS server running at http://localhost:${PORT}`);
+  });
+}
 
 // Socket.IO connection
 io.on('connection', (socket) => {
@@ -139,6 +164,4 @@ io.on('connection', (socket) => {
   // Send current state if needed
 });
 
-server.listen(PORT, () => {
-  console.log(`SiteswapJS server running at http://localhost:${PORT}`);
-});
+initializeServer();

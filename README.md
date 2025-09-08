@@ -8,7 +8,7 @@ A real-time Twitch bot that detects juggling siteswap patterns in chat messages,
 - **Live Animation**: Renders juggling animations in real-time using HTML5 Canvas
 - **AI-Powered Responses**: Generates enthusiastic, contextual responses using OpenAI's GPT model
 - **Speech Bubbles**: Displays AI responses as animated speech bubbles over the animation
-- **Emote Integration**: Supports Twitch emotes as juggling props
+- **Emote Integration**: Supports Twitch, BetterTTV, FrankerFaceZ, and unicode emoji as juggling props
 - **OBS Integration**: Easy setup as a browser source in OBS Studio
 - **Comprehensive Validation**: Supports vanilla, multiplex, synchronous, and synchronous multiplex siteswap patterns
 
