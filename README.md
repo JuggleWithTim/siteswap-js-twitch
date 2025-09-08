@@ -87,9 +87,9 @@ A real-time Twitch bot that detects juggling siteswap patterns in chat messages,
 ## Supported Siteswap Types
 
 - **Vanilla**: Standard siteswap notation (e.g., `531`, `97531`)
-- **Multiplex**: Bracketed throws (e.g., `[43]2`, `[54]`)
-- **Synchronous**: Parenthesized throws (e.g., `(4,4)`, `(6x,2)*`)
-- **Synchronous Multiplex**: Combined sync and multiplex (e.g., `([54],2)`)
+- **Multiplex**: Bracketed throws (e.g., `[55]`, `[54]`)
+- **Synchronous**: Parenthesized throws (e.g., `(4,4)`, `(6x,4)*`)
+- **Synchronous Multiplex**: Combined sync and multiplex (e.g., `([44],6)`)
 
 
 ## Credits
