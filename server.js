@@ -6,7 +6,8 @@ const { Server } = require('socket.io');
 const http = require('http');
 const axios = require('axios');
 const validateSiteswap = require('./siteswapValidator');
-const emoteService = require('./emoteService');
+const EmoteService = require('./emoteService');
+const emoteService = new EmoteService(process.env.CHANNEL_NAME, process.env.CHANNEL_ID);
 
 const app = express();
 const server = http.createServer(app);
@@ -27,7 +28,7 @@ const opts = {
     username: process.env.TWITCH_USERNAME,
     password: process.env.TWITCH_PASSWORD
   },
-  channels: ['jugglewithtim']
+  channels: [process.env.CHANNEL_NAME || 'jugglewithtim']
 };
 
 // Create Twitch client

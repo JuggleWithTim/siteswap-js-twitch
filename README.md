@@ -47,7 +47,9 @@ A real-time Twitch bot that detects juggling siteswap patterns in chat messages,
    ```
    TWITCH_USERNAME=your_bot_username
    TWITCH_PASSWORD=oauth:your_oauth_token
-   OPENAI_API_KEY=your_openai_api_key
+   OPENAI_API_KEY=sk-0000000000000000000000000000000
+   CHANNEL_NAME=your_channel_name
+   CHANNEL_ID=your_channel_user_id
    ```
 
    - **TWITCH_USERNAME**: Your Twitch bot's username
