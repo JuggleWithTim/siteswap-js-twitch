@@ -1,0 +1,124 @@
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<!-- <script src="ss.js"></script>-->
+<!-- When using ss.js instead of the sourcefiles below the error "propImage is not defined" happens. Because I can't fix it myself I'm including everything below instead. Not stupid if it works right? -->
+<script src="src/Animator.js"></script>
+<script src="src/ClubBalance.js"></script>
+<script src="src/Draw.js"></script>
+<script src="src/Hands.js"></script>
+<script src="src/HeadBounce.js"></script>
+<script src="src/Juggler.js"></script>
+<script src="src/Prop.js"></script>
+<script src="src/Props.js"></script>
+<script src="src/Throw.js"></script>
+
+<script>
+let options = {
+  fps: 60,
+  throwsPerSecond: 3,
+  exportGif: false,
+  controls: false,
+  debug: false,
+};
+
+let animator;
+
+// Frontend
+document.write("<canvas id='stage' width='280' height='640' style='background: rgba(0,0,0,0);'></canvas>");
+
+document.write(`
+  <style>
+    #speech-bubble {
+      display: none;
+      position: absolute;
+      max-width: 280px;
+      padding: 14px 20px;
+      background: #fffbe7;
+      border: 2px solid #222;
+      border-radius: 16px;
+      box-shadow: 3px 3px 8px rgba(0,0,0,0.13);
+      font-size: 23px;
+      z-index: -103;
+    }
+    #speech-bubble::after {
+      content: '';
+      position: absolute;
+      left: 2px;
+      bottom: -19px;
+      margin-bottom: 5px;
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 22px solid #fffbe7;
+      transform: rotate(17deg);
+      transform-origin: top left;
+      z-index: -102;
+    }
+    #speech-bubble::before {
+      content: '';
+      position: absolute;
+      left: 0px;
+      bottom: -21px;
+      margin-bottom: 5px;
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 24px solid #222;
+      transform: rotate(17deg);
+      transform-origin: top left;
+      z-index: -104;
+    }
+  </style>
+  <div id="speech-bubble"></div>
+`);
+
+function positionSpeechBubble() {
+  const canvas = document.getElementById('stage');
+  const bubble = document.getElementById('speech-bubble');
+  if (!canvas || !bubble) return;
+  const canvasRect = canvas.getBoundingClientRect();
+  bubble.style.left = (canvasRect.right - 80) + 'px';
+  bubble.style.top = (canvasRect.bottom - bubble.offsetHeight - 250) + 'px';
+}
+
+function showSpeechBubble(text, durationMs = 4000) {
+  const bubble = document.getElementById('speech-bubble');
+  bubble.textContent = text;
+  bubble.style.display = 'block';
+  positionSpeechBubble();
+  clearTimeout(showSpeechBubble.hideTimeout);
+  showSpeechBubble.hideTimeout = setTimeout(() => {
+    bubble.style.display = 'none';
+  }, durationMs);
+}
+
+// Connect to server
+const socket = io();
+
+// Start animator with default siteswap
+animator = new SiteswapJS('stage', '3', options);
+animator.start();
+
+// Handle siteswap changes from server
+socket.on('siteswap-change', (data) => {
+  if (animator) {
+    animator.stop();
+  }
+  animator = new SiteswapJS('stage', data.siteswap, { propType: data.propType || 'i' });
+  animator.start();
+});
+
+// Handle speech bubble from server
+socket.on('speech-bubble', (text) => {
+  showSpeechBubble(text, 30000);
+});
+
+// Handle emotes from server
+socket.on('emote', (emoteUrl) => {
+  propImage.src = emoteUrl;
+});
+
+window.addEventListener('resize', positionSpeechBubble);
+</script>
