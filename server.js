@@ -5,45 +5,7 @@ const tmi = require('tmi.js');
 const { Server } = require('socket.io');
 const http = require('http');
 const axios = require('axios');
-
-// Load client-side classes for server-side validation
-const fs = require('fs');
-const vm = require('vm');
-
-// Load Throw and Hands classes
-const throwCode = fs.readFileSync(path.join(__dirname, 'public/src/Throw.js'), 'utf8');
-const handsCode = fs.readFileSync(path.join(__dirname, 'public/src/Hands.js'), 'utf8');
-
-// Create a context for running the client-side code
-const context = vm.createContext({
-  console,
-  Math,
-  Array,
-  Object,
-  String,
-  Number,
-  Boolean,
-  RegExp,
-  Error,
-  TypeError,
-  RangeError,
-  ReferenceError,
-  SyntaxError,
-  EvalError,
-  URIError,
-  global: {},
-  window: {},
-  document: { write: () => {} },
-  propImage: { src: '' }
-});
-
-// Execute the code in the context
-vm.runInContext(throwCode, context);
-vm.runInContext(handsCode, context);
-
-// Extract the classes
-const Throw = context.Throw;
-const Hands = context.Hands;
+const validateSiteswap = require('./siteswapValidator');
 
 const app = express();
 const server = http.createServer(app);
@@ -73,14 +35,9 @@ const client = new tmi.client(opts);
 // Chat history for AI context
 let chatHistory = [];
 
-// Siteswap validation using the actual Hands class
+// Siteswap validation using secure validator
 function isValidSiteswap(siteswap) {
-  try {
-    const hands = new Hands(siteswap);
-    return hands.valid;
-  } catch (e) {
-    return false;
-  }
+  return validateSiteswap(siteswap);
 }
 
 // Find siteswap candidates (same as original)
@@ -138,12 +95,7 @@ client.on('message', async (channel, tags, message, self) => {
     // Handle messages with spaces - look for siteswap candidates
     const candidates = findSiteswapCandidates(message);
     for (const siteswapCandidate of candidates) {
-      let isValid = false;
-      try {
-        const hands = new Hands(siteswapCandidate);
-        isValid = hands.valid;
-      } catch (e) { }
-      if (isValid) {
+      if (validateSiteswap(siteswapCandidate)) {
         const recentChat = chatHistory
           .slice(-20)
           .filter(msg => !!msg.username && !!msg.message)
@@ -162,12 +114,7 @@ client.on('message', async (channel, tags, message, self) => {
 
   if (!message.includes(' ') && singleWord.length > 0) {
     // Handle single word messages
-    let isValidFull = false;
-    try {
-      const hands = new Hands(singleWord);
-      isValidFull = hands.valid;
-    } catch (e) { }
-    if (isValidFull) {
+    if (validateSiteswap(singleWord)) {
       const recentChat = chatHistory
         .slice(-20)
         .filter(msg => !!msg.username && !!msg.message)
