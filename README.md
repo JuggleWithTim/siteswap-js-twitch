@@ -55,6 +55,7 @@ A real-time Twitch bot that detects juggling siteswap patterns in chat messages,
    - **TWITCH_USERNAME**: Your Twitch bot's username
    - **TWITCH_PASSWORD**: OAuth token from [Twitch Token Generator](https://twitchtokengenerator.com/)
    - **OPENAI_API_KEY**: Your OpenAI API key for generating responses
+   - **CHANNEL_ID**: BTTV uses the ID instead of username. You can convert your username to an ID using [Streamweasels](https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/)
 
 ## Usage
 
