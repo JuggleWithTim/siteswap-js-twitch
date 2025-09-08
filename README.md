@@ -8,7 +8,7 @@ A real-time Twitch bot that detects juggling siteswap patterns in chat messages,
 - **Live Animation**: Renders juggling animations in real-time using HTML5 Canvas
 - **AI-Powered Responses**: Generates enthusiastic, contextual responses using OpenAI's GPT model
 - **Speech Bubbles**: Displays AI responses as animated speech bubbles over the animation
-- **Emote Integration**: Supports Twitch emotes as juggling props
+- **Emote Integration**: Supports Twitch, BetterTTV, FrankerFaceZ, and unicode emoji as juggling props
 - **OBS Integration**: Easy setup as a browser source in OBS Studio
 - **Comprehensive Validation**: Supports vanilla, multiplex, synchronous, and synchronous multiplex siteswap patterns
 
@@ -47,12 +47,15 @@ A real-time Twitch bot that detects juggling siteswap patterns in chat messages,
    ```
    TWITCH_USERNAME=your_bot_username
    TWITCH_PASSWORD=oauth:your_oauth_token
-   OPENAI_API_KEY=your_openai_api_key
+   OPENAI_API_KEY=sk-0000000000000000000000000000000
+   CHANNEL_NAME=your_channel_name
+   CHANNEL_ID=your_channel_user_id
    ```
 
    - **TWITCH_USERNAME**: Your Twitch bot's username
    - **TWITCH_PASSWORD**: OAuth token from [Twitch Token Generator](https://twitchtokengenerator.com/)
    - **OPENAI_API_KEY**: Your OpenAI API key for generating responses
+   - **CHANNEL_ID**: BTTV uses the ID instead of username. You can convert your username to an ID using [Streamweasels](https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/)
 
 ## Usage
 
